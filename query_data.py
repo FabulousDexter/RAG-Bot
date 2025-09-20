@@ -9,11 +9,26 @@ Features:
 - Semantic search across document embeddings using ChromaDB
 - Context-aware answer generation using Ollama's Mistral model
 - Source attribution showing which documents contributed to the answer
+- Document filtering by path, filename, or file type
+- Configurable number of retrieved chunks
+- Detailed source information display
 - Command-line interface for easy integration
 
-Usage:
+Usage Examples:
+    # Basic query across all documents
     python query_data.py "What is the main topic discussed in the documents?"
-    python query_data.py "Explain the methodology used in the research"
+
+    # Filter by document path/name
+    python query_data.py "What skills are mentioned?" --filter "CV"
+
+    # Filter by file type
+    python query_data.py "Tell me about the content" --file-type "PDF"
+
+    # Retrieve more chunks for better context
+    python query_data.py "Explain the methodology" --k 10
+
+    # Show detailed source information
+    python query_data.py "What is discussed?" --show-sources
 """
 
 import argparse
@@ -42,66 +57,191 @@ def main():
     """
     Main entry point for the query interface.
 
-    Parses command line arguments to get the user's question and
-    passes it to the RAG query function for processing.
+    Parses command line arguments to get the user's question and optional filtering parameters,
+    then passes them to the RAG query function for processing. Supports multiple filtering
+    options and configuration parameters for customized search behavior.
     """
-    # Set up command line argument parsing
-    parser = argparse.ArgumentParser()
+    # Set up command line argument parsing with comprehensive options
+    parser = argparse.ArgumentParser(
+        description="Query your RAG document database with advanced filtering options"
+    )
+
+    # Required argument: the question to ask
     parser.add_argument("query_text", type=str, help="The query text.")
+
+    # Optional filtering arguments for targeted searches
+    parser.add_argument(
+        "--filter",
+        type=str,
+        help="Filter by filename or folder (e.g., 'CV' or 'Dat-Tran-CV.pdf')",
+    )
+    parser.add_argument(
+        "--file-type",
+        type=str,
+        choices=["PDF", "TXT", "MD"],
+        help="Filter by file type",
+    )
+
+    # Configuration arguments for search behavior
+    parser.add_argument(
+        "--k", type=int, default=5, help="Number of chunks to retrieve (default: 5)"
+    )
+    parser.add_argument(
+        "--show-sources", action="store_true", help="Show detailed source information"
+    )
     args = parser.parse_args()
-    query_text = args.query_text
 
-    # Process the query through the RAG system
-    query_rag(query_text)
+    # Process the query through the RAG system with all specified parameters
+    query_rag(
+        query_text=args.query_text,
+        filter_path=args.filter,
+        file_type=args.file_type,
+        k=args.k,
+        show_sources=args.show_sources,
+    )
 
 
-def query_rag(query_text: str):
+def query_rag(
+    query_text: str,
+    filter_path: str = None,
+    file_type: str = None,
+    k: int = 5,
+    show_sources: bool = False,
+):
     """
     Execute a RAG (Retrieval-Augmented Generation) query against the document database.
 
-    This is the core function that implements the RAG pipeline:
+    This is the core function that implements the RAG pipeline with advanced filtering:
     1. Converts the user's question into a vector embedding
-    2. Searches the ChromaDB vector store for similar document chunks
-    3. Combines the most relevant chunks as context
-    4. Generates an answer using the LLM with the retrieved context
-    5. Returns the answer along with source attribution
+    2. Applies optional filters (path, file type) to narrow search scope
+    3. Searches the ChromaDB vector store for similar document chunks
+    4. Organizes results by source document for better context
+    5. Combines the most relevant chunks as structured context
+    6. Generates an answer using the LLM with the retrieved context
+    7. Returns the answer along with detailed source attribution
 
     Args:
         query_text (str): The user's question or query
+        filter_path (str, optional): Filter by document path/filename (case-insensitive)
+        file_type (str, optional): Filter by file type ("PDF", "TXT", "MD")
+        k (int): Number of document chunks to retrieve (default: 5)
+        show_sources (bool): Whether to display detailed source information
+
+    Returns:
+        str: Generated response text from the LLM
     """
     # Initialize embedding function and connect to vector database
     embedding_function = get_embedding_function()
     db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
 
-    # Perform similarity search to find relevant document chunks
-    # k=5 means we retrieve the top 5 most similar chunks
-    results = db.similarity_search_with_score(query_text, k=5)
+    # Prepare metadata filters for ChromaDB query
+    metadata_filter = {}
+    if file_type:
+        metadata_filter["file_type"] = file_type
+        print(f"🔍 Filtering by file type: {file_type}")
 
-    # Combine the content of retrieved chunks into a single context string
-    # Each chunk is separated by a clear delimiter for better LLM understanding
-    context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
+    # Display path filter if specified
+    if filter_path:
+        print(f"🔍 Filtering by path: {filter_path}")
 
-    # Prepare the prompt for the language model
+    # Apply path-based filtering using custom logic
+    # (ChromaDB's built-in filtering doesn't support substring matching)
+    if filter_path:
+        # Get more results initially to account for filtering
+        all_results = db.similarity_search_with_score(query_text, k=k * 3)
+
+        # Filter results by checking if filter_path appears in source or relative_path
+        filtered_results = []
+        for doc, score in all_results:
+            source = doc.metadata.get("source", "")
+            relative_path = doc.metadata.get("relative_path", "")
+
+            # Case-insensitive substring matching for flexible filtering
+            if (
+                filter_path.lower() in source.lower()
+                or filter_path.lower() in relative_path.lower()
+            ):
+                filtered_results.append((doc, score))
+
+        # Take the top k results after filtering
+        results = filtered_results[:k]
+
+        # Fallback to general search if no filtered results found
+        if not results:
+            print(
+                f"⚠️  No results found for filter '{filter_path}'. Showing general results instead."
+            )
+            results = db.similarity_search_with_score(
+                query_text, k=k, filter=metadata_filter if metadata_filter else None
+            )
+    else:
+        # No path filter - use ChromaDB's native filtering for file type only
+        if metadata_filter:
+            results = db.similarity_search_with_score(
+                query_text, k=k, filter=metadata_filter
+            )
+        else:
+            # No filters at all - search across all documents
+            results = db.similarity_search_with_score(query_text, k=k)
+
+    # Handle case where no results are found
+    if not results:
+        print("❌ No relevant documents found.")
+        return "No relevant information found to answer your question."
+
+    # Organize results by source document for better context presentation
+    results_by_source = {}
+    for doc, score in results:
+        # Use relative_path for cleaner display, fallback to full source path
+        source = doc.metadata.get(
+            "relative_path", doc.metadata.get("source", "Unknown")
+        )
+        if source not in results_by_source:
+            results_by_source[source] = []
+        results_by_source[source].append((doc, score))
+
+    # Display summary of sources being used
+    print(f"\n📚 Using information from {len(results_by_source)} document(s):")
+    for source in results_by_source:
+        count = len(results_by_source[source])
+        print(f"   - {source} ({count} chunk{'s' if count > 1 else ''})")
+
+    # Build structured context with source attribution
+    # This helps the LLM understand which information comes from which document
+    context_parts = []
+    for source, docs in results_by_source.items():
+        context_parts.append(f"[From {source}]:")
+        for doc, score in docs:
+            context_parts.append(doc.page_content)
+            context_parts.append("---")  # Separator between chunks
+
+    # Combine all context parts into a single string for the LLM
+    context_text = "\n\n".join(context_parts)
+
+    # Prepare and format the prompt for the language model
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_text, question=query_text)
 
     # Generate response using Ollama's Mistral model
+    print(f"\n🤖 Generating response using Mistral model...")
     model = Ollama(model="mistral")
     response_text = model.invoke(prompt)
 
-    # Extract source information for attribution
-    # This allows users to verify and explore the original documents
-    chunk_ids = [doc.metadata.get("id", None) for doc, _score in results]
+    # Display the main response
+    print(f"\n💬 Response:\n{response_text}")
 
-    # Format and display the response with clear visual separators
-    formatted_response = (
-        f"\n{'='*100}\n"
-        f"Response: {response_text}\n"
-        f"{'='*100}\n"
-        f"Sources: {chunk_ids}"
-    )
+    # Optionally display detailed source information
+    if show_sources:
+        print(f"\n📎 Detailed Sources:")
+        for i, (doc, score) in enumerate(results, 1):
+            source = doc.metadata.get("source", "Unknown")
+            page = doc.metadata.get("page", "N/A")
+            file_type = doc.metadata.get("file_type", "Unknown")
+            print(f"\n   {i}. {source}")
+            print(f"      Type: {file_type}, Page: {page}, Distance: {score:.2f}")
+            print(f"      Preview: {doc.page_content[:100]}...")
 
-    print(formatted_response)
+    return response_text
 
 
 if __name__ == "__main__":
