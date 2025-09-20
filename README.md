@@ -69,10 +69,10 @@ The tutorial provides a comprehensive walkthrough of building a RAG system from 
 ```
 RAG-Bot/
 ├── data/                          # Place your documents here (PDF, TXT, MD)
-│   ├── CV/                        # Organized subfolder support
-│   │   └── Dat-Tran-CV.pdf
-│   ├── MA1RA1_2025_Lecture_Note.pdf
-│   └── alice_in_wonderland.md
+│   ├── CV/                        # Organized subfolder support  
+│   │   └── .gitkeep              # Directory structure preserved
+│   ├── .gitkeep                  # Your documents are ignored by git for privacy
+│   └── [your documents here]     # Personal files are protected
 ├── chroma/                        # Vector database storage (auto-created)
 │   ├── chroma.sqlite3             # ChromaDB database file
 │   └── [embedding files]         # Vector embeddings and metadata
@@ -82,8 +82,10 @@ RAG-Bot/
 ├── query_data.py                  # Advanced query interface with filtering
 ├── test_embedding.py              # Embedding functionality testing
 ├── requirements.txt               # Python dependencies
-├── .gitignore                     # Git ignore configuration
+├── .gitignore                     # Git ignore configuration (protects your data)
 └── README.md                      # This file
+
+**🔒 Privacy Note**: All files in the `data/` directory are automatically ignored by git to protect your sensitive documents.
 ```
 
 ## 🚀 Advanced Usage
@@ -295,7 +297,27 @@ results = db.similarity_search_with_score(query_text, k=5)  # Change k value
 - Reduce chunk size or number of retrieved chunks
 - Use a smaller/faster language model
 
-## 🚀 Future Enhancements
+## � Privacy & Security
+
+**📁 Document Protection:**
+- All files in the `data/` directory are automatically ignored by git
+- Your sensitive documents never leave your local machine
+- ChromaDB stores only vector embeddings, not your original text
+- No data is sent to external services (fully local processing)
+
+**🛡️ Security Features:**
+- Local-only processing with Ollama models
+- No internet connection required for queries
+- Vector embeddings cannot be reverse-engineered to original content
+- Complete control over your data and privacy
+
+**📋 Best Practices:**
+- Regularly backup your `data/` directory
+- Keep sensitive documents organized in subfolders
+- The `chroma/` database contains only embeddings, safe to share if needed
+- Use descriptive filenames for better search results
+
+## �🚀 Future Enhancements
 
 - [ ] Web interface for easier interaction
 - [ ] Support for more document formats (Word, TXT, etc.)

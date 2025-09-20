@@ -72,9 +72,35 @@ Thumbs.db
 chroma/
 *.sqlite3
 
-# PDF files in data directory (keep the directory structure but ignore PDFs)
+# Sensitive data in data directory - protect all personal/confidential files
 data/*.pdf
 data/**/*.pdf
+data/*.doc
+data/**/*.doc
+data/*.docx
+data/**/*.docx
+data/*.txt
+data/**/*.txt
+data/*.md
+data/**/*.md
+data/*.json
+data/**/*.json
+data/*.csv
+data/**/*.csv
+data/*.xlsx
+data/**/*.xlsx
+data/*.xls
+data/**/*.xls
+data/*.ppt
+data/**/*.ppt
+data/*.pptx
+data/**/*.pptx
+
+# Keep data directory structure but ignore all content except .gitkeep
+data/*
+!data/.gitkeep
+!data/*/
+data/*/**
 
 # Log files
 *.log
