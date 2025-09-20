@@ -11,6 +11,17 @@ A Retrieval-Augmented Generation (RAG) bot that allows you to ask questions abou
 - **Source Tracking**: Returns source references with each answer (file, page, chunk)
 - **Incremental Updates**: Only processes new documents, avoiding duplicate work
 
+## 📺 Tutorial
+
+This project is based on the excellent tutorial by Pixegami:
+**[RAG Tutorial (with Local LLMs): AI For Your PDFs](https://www.youtube.com/watch?v=2TJxpyO3ei4&t=1060s)**
+
+The tutorial provides a comprehensive walkthrough of building a RAG system from scratch, including:
+- Setting up Ollama with local models
+- Document processing and chunking strategies
+- Vector database implementation with ChromaDB
+- Query processing and answer generation
+
 ## 📋 Prerequisites
 
 - Python 3.8+
