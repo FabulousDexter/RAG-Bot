@@ -185,10 +185,6 @@ results = db.similarity_search_with_score(query_text, k=5)  # Change k value
 - [ ] Advanced filtering and search capabilities
 - [ ] Conversation memory for follow-up questions
 
-## 📄 License
-
-This project is open source and available under the MIT License.
-
 ## 🤝 Contributing
 
 Feel free to submit issues, fork the repository, and create pull requests for any improvements.
