@@ -1,15 +1,28 @@
-# RAG Bot - PDF Question Answering System
+# RAG Bot - Advanced PDF Question Answering System
 
-A Retrieval-Augmented Generation (RAG) bot that allows you to ask questions about PDF documents using local AI models. This system uses Ollama for embeddings and language models, ChromaDB for vector storage, and LangChain for document processing.
+A powerful Retrieval-Augmented Generation (RAG) bot that allows you to ask questions about PDF, TXT, and Markdown documents using local AI models. This enhanced system features GPU acceleration, advanced filtering, and intelligent document processing with source attribution.
 
-## 🚀 Features
+## 🚀 Enhanced Features
 
-- **PDF Document Processing**: Automatically loads and processes PDF files from a directory
-- **Local AI Models**: Uses Ollama for both embeddings (nomic-embed-text) and language generation (mistral)
-- **Vector Database**: Stores document embeddings in ChromaDB for efficient similarity search
-- **Smart Chunking**: Splits documents into optimal chunks with overlap for better context
-- **Source Tracking**: Returns source references with each answer (file, page, chunk)
-- **Incremental Updates**: Only processes new documents, avoiding duplicate work
+### **Core Capabilities:**
+- **Multi-Format Document Processing**: Supports PDF, TXT, and Markdown files
+- **GPU-Accelerated Embeddings**: Uses Ollama with GPU support for fast embedding generation
+- **Advanced Vector Database**: ChromaDB with intelligent chunking and change detection
+- **Smart Source Attribution**: Hierarchical chunk IDs with file, page, and content tracking
+- **Incremental Updates**: Content hashing to detect and update only changed documents
+
+### **Advanced Query Features:**
+- **Document Filtering**: Filter by filename, folder path, or file type
+- **Configurable Retrieval**: Adjust number of chunks retrieved (k parameter)
+- **Detailed Source Display**: Show document sources, pages, and similarity scores
+- **Organized Results**: Group results by source document for better context
+- **Fallback Logic**: Intelligent handling when filters don't match any documents
+
+### **Performance Optimizations:**
+- **GPU Acceleration**: Automatic GPU detection and utilization via Ollama
+- **Batch Processing**: Efficient chunk processing for large document sets  
+- **Change Detection**: Skip processing of unchanged documents
+- **Smart Chunking**: Optimized chunk sizes with content overlap for better context
 
 ## 📺 Tutorial
 
@@ -51,49 +64,107 @@ The tutorial provides a comprehensive walkthrough of building a RAG system from 
    ollama pull mistral
    ```
 
-## 📁 Project Structure
+## 📁 Enhanced Project Structure
 
 ```
 RAG-Bot/
-├── data/                          # Place your PDF files here
-│   └── MA1RA1_2025_Lecture_Note.pdf
+├── data/                          # Place your documents here (PDF, TXT, MD)
+│   ├── CV/                        # Organized subfolder support  
+│   │   └── .gitkeep              # Directory structure preserved
+│   ├── .gitkeep                  # Your documents are ignored by git for privacy
+│   └── [your documents here]     # Personal files are protected
 ├── chroma/                        # Vector database storage (auto-created)
-├── get_embedding_function.py      # Embedding configuration
-├── populate_database.py           # Document processing and indexing
-├── query_data.py                  # Query interface
-├── test_embedding.py              # Test embedding functionality
+│   ├── chroma.sqlite3             # ChromaDB database file
+│   └── [embedding files]         # Vector embeddings and metadata
+├── venv/                          # Virtual environment (auto-created)
+├── get_embedding_function.py      # GPU-accelerated embedding configuration  
+├── populate_database.py           # Enhanced document processing with change detection
+├── query_data.py                  # Advanced query interface with filtering
+├── test_embedding.py              # Embedding functionality testing
 ├── requirements.txt               # Python dependencies
+├── .gitignore                     # Git ignore configuration (protects your data)
 └── README.md                      # This file
+
+**🔒 Privacy Note**: All files in the `data/` directory are automatically ignored by git to protect your sensitive documents.
 ```
 
-## 🚀 Usage
+## 🚀 Advanced Usage
 
-### Step 1: Add Your PDF Documents
-Place your PDF files in the `data/` directory.
+### Step 1: Add Your Documents
+Place your documents in the `data/` directory. Supports:
+- **PDF files**: Technical documents, research papers, manuals
+- **Text files**: Notes, documentation, reports  
+- **Markdown files**: Documentation, articles, README files
+- **Organized folders**: Create subfolders for better organization
 
 ### Step 2: Populate the Database
-Process and index your documents:
+Process and index your documents with enhanced change detection:
 ```bash
+# Process new and changed documents
 python populate_database.py
-```
 
-To reset the database and reprocess all documents:
-```bash
+# Reset database and reprocess everything
 python populate_database.py --reset
 ```
 
-### Step 3: Ask Questions
-Query your documents:
+**Features:**
+- ✅ **Content hashing** to detect file changes
+- ✅ **Incremental processing** of only new/modified files
+- ✅ **GPU acceleration** for faster embedding generation
+- ✅ **Progress tracking** with detailed console output
+
+### Step 3: Query with Advanced Filtering
+
+#### **Basic Queries:**
 ```bash
-python query_data.py "What is the main topic of the lecture?"
+# Query all documents
+python query_data.py "What is the main topic discussed?"
+
+# Get more context with additional chunks
+python query_data.py "Explain the methodology" --k 10
 ```
 
-Example output:
+#### **Filtered Queries:**
+```bash
+# Filter by document name/path
+python query_data.py "What programming skills are mentioned?" --filter "CV"
+
+# Filter by file type
+python query_data.py "What are the research findings?" --file-type "PDF"
+
+# Combine filters
+python query_data.py "What topics are covered?" --filter "Lecture" --file-type "PDF" --k 8
 ```
-====================================================================================================
-Response: The main topic of the lecture is machine learning fundamentals, covering supervised and unsupervised learning algorithms.
-====================================================================================================
-Sources: ['MA1RA1_2025_Lecture_Note.pdf:1:0', 'MA1RA1_2025_Lecture_Note.pdf:1:1', 'MA1RA1_2025_Lecture_Note.pdf:2:0']
+
+#### **Detailed Analysis:**
+```bash
+# Show detailed source information
+python query_data.py "Summarize the key points" --show-sources
+
+# Advanced filtering with source details
+python query_data.py "What skills are mentioned?" --filter "CV" --show-sources --k 10
+```
+
+#### **Example Advanced Output:**
+```bash
+📚 Using information from 2 document(s):
+   - Dat-Tran-CV.pdf (3 chunks)
+   - MA1RA1_2025_Lecture_Note.pdf (2 chunks)
+
+🤖 Generating response using Mistral model...
+
+💬 Response:
+Based on the CV, the programming skills mentioned include Python, JavaScript, 
+machine learning frameworks, and database management systems...
+
+📎 Detailed Sources:
+   1. data\CV\Dat-Tran-CV.pdf
+      Type: PDF, Page: 0, Distance: 0.23
+      Preview: Experience in Python development with frameworks including...
+
+   2. data\CV\Dat-Tran-CV.pdf  
+      Type: PDF, Page: 0, Distance: 0.31
+      Preview: Technical skills: JavaScript, React, Node.js, MongoDB...
 ```
 
 ## 🧪 Testing
@@ -110,14 +181,55 @@ Embedding functions works! Vector dimension: 768
 
 ## ⚙️ Configuration
 
-### Embedding Model
-The system uses `nomic-embed-text` for embeddings. To change the model, edit `get_embedding_function.py`:
+### Environment Configuration
+The system uses Ollama for both embeddings and language model:
+
+```python
+# get_embedding_function.py
+EMBEDDING_MODEL = "nomic-embed-text"  # High-quality embeddings
+LLM_MODEL = "mistral"                 # Local language model
+```
+
+### Advanced Parameters
+
+#### **Database Population (populate_database.py)**
+- `--reset`: Clear existing database and reprocess all documents
+- `--debug`: Enable verbose logging for troubleshooting
+- Automatic GPU acceleration when available
+- Content hashing for intelligent change detection
+
+#### **Query Interface (query_data.py)**
+```bash
+python query_data.py "your question" [options]
+
+Options:
+  --k INTEGER         Number of relevant chunks to retrieve (default: 5)
+  --filter TEXT       Filter documents by name/path substring
+  --file-type TEXT    Filter by file type (PDF, TXT, MD)
+  --show-sources      Display detailed source information
+  --model TEXT        Override default LLM model
+  --help              Show all available options
+```
+
+### Performance Tuning
+- **GPU Acceleration**: Automatically detected and enabled for Ollama
+- **Chunk Size**: Optimized at 1000 characters with 200 character overlap
+- **Embedding Model**: `nomic-embed-text` provides excellent semantic understanding
+- **Similarity Search**: ChromaDB's cosine similarity with configurable k value
+
+### Document Processing
+- **Supported Formats**: PDF, TXT, MD with automatic format detection
+- **Change Detection**: SHA-256 hashing prevents unnecessary reprocessing
+- **Error Handling**: Graceful handling of corrupted or inaccessible files
+- **Progress Tracking**: Real-time feedback during processing
+
+### Model Configuration
+To change embedding model, edit `get_embedding_function.py`:
 ```python
 embeddings = OllamaEmbeddings(model="your-preferred-embedding-model")
 ```
 
-### Language Model
-The system uses `mistral` for text generation. To change the model, edit `query_data.py`:
+To change language model, edit `query_data.py`:
 ```python
 model = Ollama(model="your-preferred-llm-model")
 ```
@@ -126,10 +238,9 @@ model = Ollama(model="your-preferred-llm-model")
 Adjust chunk size and overlap in `populate_database.py`:
 ```python
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=800,        # Adjust chunk size
-    chunk_overlap=80,      # Adjust overlap
+    chunk_size=1000,       # Optimized chunk size
+    chunk_overlap=200,     # Balanced overlap
     length_function=len,
-    is_separator_regex=False
 )
 ```
 
@@ -141,13 +252,23 @@ results = db.similarity_search_with_score(query_text, k=5)  # Change k value
 
 ## 🔧 How It Works
 
-1. **Document Loading**: `PyPDFDirectoryLoader` loads all PDF files from the `data/` directory
-2. **Text Splitting**: Documents are split into 800-character chunks with 80-character overlap
-3. **Embedding Generation**: Each chunk is converted to a 768-dimensional vector using `nomic-embed-text`
-4. **Vector Storage**: Embeddings are stored in ChromaDB with metadata (source, page, chunk ID)
-5. **Query Processing**: User questions are embedded and matched against stored vectors
-6. **Context Retrieval**: Top 5 most similar chunks are retrieved
-7. **Answer Generation**: Retrieved context is sent to `mistral` model to generate an answer
+1. **Document Loading**: Multi-format loaders handle PDF, TXT, and MD files from the `data/` directory
+2. **Content Hashing**: SHA-256 hashing detects file changes to avoid unnecessary reprocessing
+3. **Text Splitting**: Documents are split into 1000-character chunks with 200-character overlap for optimal context
+4. **GPU-Accelerated Embedding**: Each chunk is converted to a 768-dimensional vector using `nomic-embed-text` with GPU acceleration
+5. **Vector Storage**: Embeddings are stored in ChromaDB with rich metadata (source, page, chunk ID, file type)
+6. **Advanced Query Processing**: User questions support filtering by document name, file type, and configurable retrieval parameters
+7. **Smart Context Retrieval**: Configurable number of most similar chunks with custom filtering logic
+8. **Enhanced Answer Generation**: Retrieved context is sent to `mistral` model with detailed source attribution and organized results
+
+## 📊 Performance Features
+
+- **🚀 GPU Acceleration**: Automatic GPU detection and utilization for embedding generation
+- **⚡ Incremental Processing**: Only processes new or modified documents
+- **🎯 Smart Filtering**: Advanced document filtering by name, path, and file type
+- **📈 Scalable Architecture**: Handles large document collections efficiently
+- **🔍 Rich Metadata**: Comprehensive source attribution with page numbers and relevance scores
+- **💾 Persistent Storage**: ChromaDB ensures fast startup and query performance
 
 ## 📦 Dependencies
 
@@ -176,7 +297,27 @@ results = db.similarity_search_with_score(query_text, k=5)  # Change k value
 - Reduce chunk size or number of retrieved chunks
 - Use a smaller/faster language model
 
-## 🚀 Future Enhancements
+## � Privacy & Security
+
+**📁 Document Protection:**
+- All files in the `data/` directory are automatically ignored by git
+- Your sensitive documents never leave your local machine
+- ChromaDB stores only vector embeddings, not your original text
+- No data is sent to external services (fully local processing)
+
+**🛡️ Security Features:**
+- Local-only processing with Ollama models
+- No internet connection required for queries
+- Vector embeddings cannot be reverse-engineered to original content
+- Complete control over your data and privacy
+
+**📋 Best Practices:**
+- Regularly backup your `data/` directory
+- Keep sensitive documents organized in subfolders
+- The `chroma/` database contains only embeddings, safe to share if needed
+- Use descriptive filenames for better search results
+
+## �🚀 Future Enhancements
 
 - [ ] Web interface for easier interaction
 - [ ] Support for more document formats (Word, TXT, etc.)
