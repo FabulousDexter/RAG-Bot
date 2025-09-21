@@ -237,8 +237,9 @@ def query_rag(
             source = doc.metadata.get("source", "Unknown")
             page = doc.metadata.get("page", "N/A")
             file_type = doc.metadata.get("file_type", "Unknown")
+
             print(f"\n   {i}. {source}")
-            print(f"      Type: {file_type}, Page: {page}, Distance: {score:.2f}")
+            print(f"      Type: {file_type}, Page: {page}")
             print(f"      Preview: {doc.page_content[:100]}...")
 
     return response_text
