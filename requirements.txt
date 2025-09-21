@@ -3,3 +3,4 @@ langchain
 chromadb
 pytest
 boto3
+streamlit

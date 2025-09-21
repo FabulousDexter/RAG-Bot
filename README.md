@@ -1,8 +1,24 @@
-# RAG Bot - Advanced PDF Question Answering System
+# RAG Bot - Advanced Document Question Answering System
 
-A powerful Retrieval-Augmented Generation (RAG) bot that allows you to ask questions about PDF, TXT, and Markdown documents using local AI models. This enhanced system features GPU acceleration, advanced filtering, and intelligent document processing with source attribution.
+A powerful Retrieval-Augmented Generation (RAG) bot that allows you to ask questions about PDF, TXT, and Markdown documents using local AI models. This enhanced system features **dual interfaces** (web and command-line), GPU acceleration, advanced filtering, and intelligent document processing with source attribution.
 
 ## 🚀 Enhanced Features
+
+### **🌐 Dual Inte## 🚀 Future Enhancements
+
+- [x] ~~Web interface for easier interaction~~ ✅ **COMPLETED** - Streamlit web app available
+- [ ] Enhanced web interface with conversation history
+- [ ] Support for more document formats (Word, PowerPoint, etc.)
+- [ ] Multi-language support for non-English documents
+- [ ] Integration with cloud-based LLMs (OpenAI, Claude)
+- [ ] Advanced filtering and search capabilities (semantic filters)
+- [ ] Conversation memory for follow-up questions
+- [ ] Document summarization and key insights extraction
+- [ ] Real-time collaboration features
+- [ ] API endpoints for integration with other applicationspport:**
+- **Streamlit Web App**: User-friendly web interface with drag-and-drop file upload
+- **Command Line Interface**: Advanced terminal-based queries with extensive filtering options
+- **Cross-Platform**: Works on Windows, Mac, and Linux
 
 ### **Core Capabilities:**
 - **Multi-Format Document Processing**: Supports PDF, TXT, and Markdown files
@@ -57,12 +73,45 @@ The tutorial provides a comprehensive walkthrough of building a RAG system from 
    ```bash
    pip install -r requirements.txt
    ```
+   
+   This installs all required packages including:
+   - **LangChain**: Document processing and RAG framework
+   - **ChromaDB**: Vector database for embeddings
+   - **Streamlit**: Web interface framework
+   - **PyPDF**: PDF document processing
+   - **Additional utilities**: Testing and cloud integration tools
 
 4. **Install Ollama models:**
    ```bash
    ollama pull nomic-embed-text
    ollama pull mistral
    ```
+
+## 🎯 Choose Your Interface
+
+This RAG bot offers **two ways** to interact with your documents:
+
+### **🌐 Web Interface (Recommended for beginners)**
+- **User-friendly**: Point-and-click interface
+- **Visual**: See results formatted nicely
+- **Interactive**: Real-time file upload and processing
+- **No commands**: No need to remember command-line syntax
+
+**Launch command:**
+```bash
+streamlit run app.py
+```
+
+### **🖥️ Command Line (Recommended for power users)**
+- **Powerful**: Advanced filtering and configuration options
+- **Fast**: Quick queries without opening browser
+- **Scriptable**: Can be automated or integrated into workflows
+- **Detailed**: More control over search parameters
+
+**Example command:**
+```bash
+python query_data.py "your question" --filter CV --show-sources
+```
 
 ## 📁 Enhanced Project Structure
 
@@ -77,9 +126,10 @@ RAG-Bot/
 │   ├── chroma.sqlite3             # ChromaDB database file
 │   └── [embedding files]         # Vector embeddings and metadata
 ├── venv/                          # Virtual environment (auto-created)
+├── app.py                         # 🌐 Streamlit web interface (NEW!)
 ├── get_embedding_function.py      # GPU-accelerated embedding configuration  
 ├── populate_database.py           # Enhanced document processing with change detection
-├── query_data.py                  # Advanced query interface with filtering
+├── query_data.py                  # Advanced command-line query interface
 ├── test_embedding.py              # Embedding functionality testing
 ├── requirements.txt               # Python dependencies
 ├── .gitignore                     # Git ignore configuration (protects your data)
@@ -88,7 +138,53 @@ RAG-Bot/
 **🔒 Privacy Note**: All files in the `data/` directory are automatically ignored by git to protect your sensitive documents.
 ```
 
-## 🚀 Advanced Usage
+## 🌐 Web Interface (Streamlit)
+
+### **🚀 Quick Start - Web App**
+Launch the user-friendly web interface:
+```bash
+# Install Streamlit (if not already installed)
+pip install streamlit
+
+# Launch the web app
+streamlit run app.py
+```
+
+### **✨ Web Interface Features:**
+- **📁 Drag & Drop Upload**: Easily upload PDF, TXT, and MD files
+- **🔄 Real-time Processing**: Process documents directly through the web UI
+- **💬 Interactive Chat**: Ask questions with instant responses
+- **🎛️ Advanced Controls**: Adjust retrieval settings with sliders and filters
+- **📱 Responsive Design**: Works on desktop, tablet, and mobile
+- **🎨 Clean UI**: Intuitive interface for non-technical users
+
+### **📖 How to Use the Web App:**
+1. **📂 Upload Documents**: 
+   - Click "Browse files" in the sidebar
+   - Select multiple PDF, TXT, or MD files
+   - Files are automatically saved to the `data/` directory
+
+2. **⚙️ Process Documents**: 
+   - Click "Process Documents" button
+   - Wait for processing to complete
+   - Documents are added to the vector database
+
+3. **💭 Ask Questions**: 
+   - Type your question in the main text box
+   - Optionally add document filters
+   - Adjust the number of chunks with the slider
+   - Click "Search" for AI-powered answers
+
+### **🎯 Web Interface Examples:**
+```
+Query: "What programming skills are mentioned in the CV?"
+Filter: "CV"
+Chunks: 5
+
+Result: Detailed analysis of programming skills with source attribution
+```
+
+## 🖥️ Command Line Interface (Advanced)
 
 ### Step 1: Add Your Documents
 Place your documents in the `data/` directory. Supports:
@@ -148,21 +244,21 @@ python query_data.py "What skills are mentioned?" --filter "CV" --show-sources -
 #### **Example Advanced Output:**
 ```bash
 📚 Using information from 2 document(s):
-   - Dat-Tran-CV.pdf (3 chunks)
-   - MA1RA1_2025_Lecture_Note.pdf (2 chunks)
+   - sample-resume.pdf (3 chunks)
+   - research-paper.pdf (2 chunks)
 
 🤖 Generating response using Mistral model...
 
 💬 Response:
-Based on the CV, the programming skills mentioned include Python, JavaScript, 
+Based on the documents, the programming skills mentioned include Python, JavaScript, 
 machine learning frameworks, and database management systems...
 
 📎 Detailed Sources:
-   1. data\CV\Dat-Tran-CV.pdf
+   1. data\CV\sample-resume.pdf
       Type: PDF, Page: 0, Distance: 0.23
       Preview: Experience in Python development with frameworks including...
 
-   2. data\CV\Dat-Tran-CV.pdf  
+   2. data\CV\sample-resume.pdf  
       Type: PDF, Page: 0, Distance: 0.31
       Preview: Technical skills: JavaScript, React, Node.js, MongoDB...
 ```
@@ -275,12 +371,35 @@ results = db.similarity_search_with_score(query_text, k=5)  # Change k value
 - **pypdf**: PDF document processing
 - **langchain**: LLM application framework
 - **chromadb**: Vector database for embeddings
+- **streamlit**: Web interface framework
 - **pytest**: Testing framework
 - **boto3**: AWS SDK (for future cloud integrations)
 
 ## 🔍 Troubleshooting
 
-### Common Issues
+### Web Interface Issues
+
+**Streamlit not starting:**
+```bash
+# Install Streamlit if missing
+pip install streamlit
+
+# Check if port is available (default: 8501)
+streamlit run app.py --server.port 8502
+```
+
+**File upload not working:**
+- Ensure the `data/` directory exists
+- Check file permissions
+- Try smaller files first (< 10MB)
+- Supported formats: PDF, TXT, MD only
+
+**Web interface shows errors:**
+- Check console output for detailed error messages
+- Ensure Ollama is running: `ollama list`
+- Verify models are installed: `ollama pull nomic-embed-text`
+
+### Command Line Issues
 
 **ImportError with LangChain:**
 - Update to newer packages: `pip install langchain-ollama langchain-chroma`
